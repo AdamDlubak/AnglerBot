@@ -107,6 +107,9 @@ UpgradeLog*.htm
 # Microsoft Fakes
 FakesAssemblies/
 
+#NuGet Pakcages directory
+packages/*
+
 git_stats/*
 
 *.ncrunchproject
