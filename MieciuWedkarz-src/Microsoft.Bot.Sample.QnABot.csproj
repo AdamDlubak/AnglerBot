@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project=".\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('.\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project=".\packages\Microsoft.Net.Compilers.1.2.1\build\Microsoft.Net.Compilers.props" Condition="Exists('.\packages\Microsoft.Net.Compilers.1.2.1\build\Microsoft.Net.Compilers.props')" />
@@ -134,6 +134,10 @@
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="QnAMakerDialog, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\QnAMakerDialog.1.1.1\lib\net46\QnAMakerDialog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.1.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\System.IdentityModel.Tokens.Jwt.5.1.4\lib\net451\System.IdentityModel.Tokens.Jwt.dll</HintPath>
@@ -193,6 +197,8 @@
     <Content Include="packages.config">
       <SubType>Designer</SubType>
     </Content>
+    <None Include="Properties\PublishProfiles\mieciuwedkarz - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\mieciuwedkarz - Web Deploy.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -244,6 +250,6 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Import Project="PostDeployScripts\IncludeSources.targets" Condition="Exists('PostDeployScripts\IncludeSources.targets')"/>
-  <Import Project="..\PostDeployScripts\IncludeSources.targets" Condition="Exists('..\PostDeployScripts\IncludeSources.targets')"/>
+  <Import Project="PostDeployScripts\IncludeSources.targets" Condition="Exists('PostDeployScripts\IncludeSources.targets')" />
+  <Import Project="..\PostDeployScripts\IncludeSources.targets" Condition="Exists('..\PostDeployScripts\IncludeSources.targets')" />
 </Project>

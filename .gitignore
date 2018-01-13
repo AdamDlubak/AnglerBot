@@ -108,6 +108,7 @@ UpgradeLog*.htm
 FakesAssemblies/
 
 #NuGet Pakcages directory
+MieciuWedkarz-src/packages/*
 packages/*
 
 git_stats/*
