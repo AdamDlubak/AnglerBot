@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -38,16 +39,24 @@ namespace Microsoft.Bot.Sample.QnABot
         var speciesResult = JsonConvert.DeserializeObject<ImageResultContent>(speciesJsonString);
         var speciesTag =
           speciesResult.Predictions.FirstOrDefault(
-            c => Math.Abs(c.ProbabilityValue - speciesResult.Predictions.Max(e => e.ProbabilityValue)) < 0.000001)?.Tag;
+            c => Math.Abs(c.ProbabilityValue - speciesResult.Predictions.Max(e => e.ProbabilityValue)) < 0.000001 && c.ProbabilityValue >= 0.75)?.Tag;
 
-        var response = await new QnAServiceRequestPerformer().SendRequest<QuestionResponse>($"Wymiar ochronny {speciesTag}");
-        var part1 = response.Answers.FirstOrDefault()?.Answer;
+        if (string.IsNullOrEmpty(speciesTag))
+        {
+          var reply = activity.CreateReply("Niestety, nie wiem co to za ryba...");
+          await new ConnectorClient(new Uri(activity.ServiceUrl)).Conversations.ReplyToActivityAsync(reply);
+        }
+        else
+        {
+          var response = await new QnAServiceRequestPerformer().SendRequest<QuestionResponse>($"Wymiar ochronny {speciesTag}");
+          var part1 = response.Answers.FirstOrDefault()?.Answer;
 
-        response = await new QnAServiceRequestPerformer().SendRequest<QuestionResponse>($"Okres ochronny {speciesTag}");
-        var part2 = response.Answers.FirstOrDefault()?.Answer;
+          response = await new QnAServiceRequestPerformer().SendRequest<QuestionResponse>($"Okres ochronny {speciesTag}");
+          var part2 = response.Answers.FirstOrDefault()?.Answer;
 
-        var reply = activity.CreateReply($"{part1}. Okres ochronny dla tego gatunku to: {part2}");
-        await new ConnectorClient(new Uri(activity.ServiceUrl)).Conversations.ReplyToActivityAsync(reply);
+          var reply = activity.CreateReply($"{part1}. Okres ochronny dla tego gatunku to: {part2}");
+          await new ConnectorClient(new Uri(activity.ServiceUrl)).Conversations.ReplyToActivityAsync(reply);
+        }
       }
       else
       {
@@ -75,7 +84,7 @@ namespace Microsoft.Bot.Sample.QnABot
       client.DefaultRequestHeaders.Add("Prediction-Key", "2884ad7130784b71bddc4ae01ef5c096");
 
       // Prediction URL - replace this example URL with your valid prediction URL.
-      var url = "https://southcentralus.api.cognitive.microsoft.com/customvision/v1.1/Prediction/efc9c59a-9113-4973-882f-683a9e1a5d7f/image?iterationId=5280d7ab-1467-484f-8058-85ca46de929e";
+      var url = "https://southcentralus.api.cognitive.microsoft.com/customvision/v1.1/Prediction/efc9c59a-9113-4973-882f-683a9e1a5d7f/image";
 
       // Request body. Try this sample with a locally stored image.
       byte[] byteData = GetImageAsByteArray(imageUrl);
