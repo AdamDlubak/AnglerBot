@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -18,6 +17,8 @@ namespace Microsoft.Bot.Sample.QnABot
   [Serializable]
   public class RootDialog : IDialog<object>
   {
+    private const string NotFound = "NOT_FOUND";
+
     public async Task StartAsync(IDialogContext context)
     {
       /* Wait until the first message is received from the conversation and call MessageReceviedAsync 
@@ -48,13 +49,25 @@ namespace Microsoft.Bot.Sample.QnABot
         }
         else
         {
-          var response = await new QnAServiceRequestPerformer().SendRequest<QuestionResponse>($"Wymiar ochronny {speciesTag}");
+          var replyMessage = string.Empty;
+          var response = await new QnAServiceRequestPerformer().SendRequest<QuestionResponse>($"Opis {speciesTag}");
+          var part3 = response.Answers.FirstOrDefault()?.Answer;
+          if (!string.IsNullOrEmpty(part3) && part3 != NotFound)
+            replyMessage += $"Opis: {part3} ";
+
+          response = await new QnAServiceRequestPerformer().SendRequest<QuestionResponse>($" Wymiar ochronny {speciesTag}");
           var part1 = response.Answers.FirstOrDefault()?.Answer;
+          if (!string.IsNullOrEmpty(part1) && part1 != NotFound)
+            replyMessage += part1;
+          else replyMessage += " Ten gatunek nie posiada wymiaru ochronnego.";
 
-          response = await new QnAServiceRequestPerformer().SendRequest<QuestionResponse>($"Okres ochronny {speciesTag}");
+          response = await new QnAServiceRequestPerformer().SendRequest<QuestionResponse>($" Okres ochronny {speciesTag}");
           var part2 = response.Answers.FirstOrDefault()?.Answer;
+          if (!string.IsNullOrEmpty(part2) && part2 != NotFound)
+            replyMessage += $" Okres ochronny dla tego gatunku to: {part2}";
+          else replyMessage += " Ten gatunek nie posiada okresu ochronnego.";
 
-          var reply = activity.CreateReply($"{part1}. Okres ochronny dla tego gatunku to: {part2}");
+          var reply = activity.CreateReply(replyMessage);
           await new ConnectorClient(new Uri(activity.ServiceUrl)).Conversations.ReplyToActivityAsync(reply);
         }
       }
@@ -70,10 +83,9 @@ namespace Microsoft.Bot.Sample.QnABot
       context.Wait(MessageReceivedAsync);
     }
 
-    private static byte[] GetImageAsByteArray(string imageUrl)
+    private byte[] GetImageAsByteArray(string imageUrl)
     {
-      var webClient = new WebClient();
-      return webClient.DownloadData(imageUrl);
+      return new WebClient().DownloadData(imageUrl);
     }
 
     private async Task<string> GetSpecies(string imageUrl)
