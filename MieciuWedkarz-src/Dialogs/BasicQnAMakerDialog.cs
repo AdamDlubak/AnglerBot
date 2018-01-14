@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Flurl.Http;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
@@ -26,6 +27,10 @@ namespace Microsoft.Bot.Sample.QnABot
     private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
     {
       var message = await result;
+      var activity = context.Activity as Activity;
+      if (activity == null)
+        return;
+
       var attachment = message.Attachments.FirstOrDefault();
       if (attachment != null && attachment.ContentType.Contains("image"))
       {
@@ -34,8 +39,15 @@ namespace Microsoft.Bot.Sample.QnABot
         var speciesTag =
           speciesResult.Predictions.FirstOrDefault(
             c => Math.Abs(c.ProbabilityValue - speciesResult.Predictions.Max(e => e.ProbabilityValue)) < 0.000001)?.Tag;
-        message.Text = $"Wymiar ochronny {speciesTag}";
-        await context.Forward(new BasicQnAMakerDialog(), AfterAnswerAsync, message, CancellationToken.None);
+
+        var response = await new QnAServiceRequestPerformer().SendRequest<QuestionResponse>($"Wymiar ochronny {speciesTag}");
+        var part1 = response.Answers.FirstOrDefault()?.Answer;
+
+        response = await new QnAServiceRequestPerformer().SendRequest<QuestionResponse>($"Okres ochronny {speciesTag}");
+        var part2 = response.Answers.FirstOrDefault()?.Answer;
+
+        var reply = activity.CreateReply($"{part1}. Okres ochronny dla tego gatunku to: {part2}");
+        await new ConnectorClient(new Uri(activity.ServiceUrl)).Conversations.ReplyToActivityAsync(reply);
       }
       else
       {
@@ -115,18 +127,20 @@ namespace Microsoft.Bot.Sample.QnABot
       }
       else
       {
-        await Task.FromResult(base.DefaultMatchHandler(context, originalQueryText, result));
+        await base.DefaultMatchHandler(context, originalQueryText, result);
       }
     }
   }
 
-  //public class QnAServiceRequestPerformer
-  //{
-  //  public async T SendRequest<T>(string url)
-  //  {
-      
-  //  }
-  //}
+  public class QnAServiceRequestPerformer
+  {
+    public async Task<T> SendRequest<T>(string question)
+    {
+      var url = @"https://westus.api.cognitive.microsoft.com/qnamaker/v2.0/knowledgebases/73015880-cac0-400a-af2b-fea56e55e406/generateAnswer";
+     return await url.WithHeader("Ocp-Apim-Subscription-Key", "2271ce4c39c3491883941f69d1ecfc90")
+        .PostJsonAsync(new { question }).ReceiveJson<T>();
+    }
+  }
 
   public class ImageResultContent
   {
@@ -143,5 +157,23 @@ namespace Microsoft.Bot.Sample.QnABot
 
     [JsonProperty("Tag")]
     public string Tag { get; set; }
+  }
+
+  public class RequestQuestion
+  {
+    [JsonProperty("question")]
+    public string Question { get; set; }
+  }
+
+  public class QuestionResponse
+  {
+    [JsonProperty("answers")]
+    public List<QuestionResponseNode> Answers { get; set; }
+  }
+
+  public class QuestionResponseNode
+  {
+    [JsonProperty("answer")]
+    public string Answer { get; set; }
   }
 }
