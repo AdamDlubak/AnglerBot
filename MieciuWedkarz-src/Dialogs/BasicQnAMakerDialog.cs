@@ -6,10 +6,12 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Bot.Builder.CognitiveServices.QnAMaker;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
 using QnAMakerDialog;
+using QnAMakerResult = QnAMakerDialog.QnAMakerResult;
 
 namespace Microsoft.Bot.Sample.QnABot
 {
@@ -80,6 +82,8 @@ namespace Microsoft.Bot.Sample.QnABot
   // For more information about this template visit http://aka.ms/azurebots-csharp-qnamaker
   [Serializable]
   [QnAMakerService("2271ce4c39c3491883941f69d1ecfc90", "73015880-cac0-400a-af2b-fea56e55e406")]
+  [QnAMaker("2271ce4c39c3491883941f69d1ecfc90", "73015880-cac0-400a-af2b-fea56e55e406", "I don't understand this right now! Try another query!", 0.50, 3)]
+
   public class BasicQnAMakerDialog : QnAMakerDialog<IMessageActivity>
   {
     public override async Task NoMatchHandler(IDialogContext context, string originalQueryText)
