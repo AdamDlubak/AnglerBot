@@ -100,7 +100,7 @@ namespace Microsoft.Bot.Sample.QnABot
       if (activity == null)
         return;
 
-      var reply = activity.CreateReply($"PiÍkny {originalQueryText.Split().Last()}! Niestety nie znaleüliúmy øadnych informacji na temat wymiaru i okresu ochronnego...");
+      var reply = activity.CreateReply($"Niestety nie znaleüliúmy øadnych informacji na ten temat...");
       await new ConnectorClient(new Uri(activity.ServiceUrl)).Conversations.ReplyToActivityAsync(reply);
     }
 
